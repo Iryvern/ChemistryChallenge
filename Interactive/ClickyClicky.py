@@ -1,0 +1,160 @@
+import pygame
+
+# Initialize Pygame
+pygame.init()
+
+# Set up the window
+window_width = 729
+window_height = 696
+window = pygame.display.set_mode((window_width, window_height), pygame.RESIZABLE)
+pygame.display.set_caption("Click to color white areas")
+
+# Set up the clock
+clock = pygame.time.Clock()
+
+# Load the background image
+background_image = pygame.image.load("35Original.png").convert()
+
+# Scale the background image to fit the screen
+background_image = pygame.transform.scale(background_image, (window_width, window_height))
+
+def change_pixel_color(surface, pos, new_color):
+    # Get the color value of the pixel at the given position
+    old_color = surface.get_at(pos)[:3]
+    
+    # Check if the old and new colors are the same
+    if old_color == new_color:
+        return
+    
+    # Fill in all connected white pixels with the new color
+    if old_color == (255, 255, 255):
+        flood_fill(surface, pos, new_color, tolerance=10)
+    elif old_color == (255, 0 ,0):
+        flood_fill(surface, pos, new_color, tolerance=10)
+    else:
+        # Set the color value of the pixel at the given position to the new color
+        surface.set_at(pos, new_color)
+    
+    # Update the display to show the changed pixels
+    pygame.display.update()
+
+dot_color = (255, 255, 255)
+
+fill_color = (255, 0, 0)
+
+def flood_fill(surface, start_pos, new_color, tolerance=0):
+    # Get the starting color and convert it to a tuple if necessary
+    start_color = surface.get_at(start_pos)[:3]
+    if not isinstance(start_color, tuple):
+        start_color = tuple(start_color)
+    
+    # Create a set to keep track of visited pixels
+    visited = set()
+    
+    # Create a stack to store the pixels to be checked
+    stack = [start_pos]
+    
+    # Loop until the stack is empty
+    while stack:
+        # Pop the next pixel from the stack
+        pos = stack.pop()
+        
+        # Check if this pixel has already been visited
+        if pos in visited:
+            continue
+        
+        # Get the color of the current pixel and check if it matches the starting color
+        color = surface.get_at(pos)[:3]
+        if abs(color[0] - start_color[0]) > tolerance or \
+           abs(color[1] - start_color[1]) > tolerance or \
+           abs(color[2] - start_color[2]) > tolerance:
+            continue
+        
+        # Change the color of the current pixel and mark it as visited
+        surface.set_at(pos, new_color)
+        visited.add(pos)
+        
+        # Add the neighboring pixels to the stack
+        if pos[0] > 0:
+            stack.append((pos[0]-1, pos[1]))
+        if pos[0] < surface.get_width()-1:
+            stack.append((pos[0]+1, pos[1]))
+        if pos[1] > 0:
+            stack.append((pos[0], pos[1]-1))
+        if pos[1] < surface.get_height()-1:
+            stack.append((pos[0], pos[1]+1))
+
+class Button:
+    def __init__(self, x, y, w, h, text, font, font_color, bg_color, action=None):
+        self.rect = pygame.Rect(x, y, w, h)
+        self.text = text
+        self.font = font
+        self.font_color = font_color
+        self.bg_color = bg_color
+        self.action = action
+
+    def draw(self, surface):
+        pygame.draw.rect(surface, self.bg_color, self.rect)
+        text_surface = self.font.render(self.text, True, self.font_color)
+        text_rect = text_surface.get_rect(center=self.rect.center)
+        surface.blit(text_surface, text_rect)
+
+    def handle_event(self, event):
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            if self.rect.collidepoint(event.pos):
+                if self.action:
+                    self.action()
+
+def button_action():
+    pygame.image.save(background_image, "saved_image.png")
+    print("Saved image")
+
+button_font = pygame.font.Font(None, 36)
+button_text = "Save"
+button_color = (0, 255, 0)
+button = Button(10, 10, 100, 50, button_text, button_font, (0, 0, 0), button_color, lambda: button_action() )
+
+# Run the game loop
+running = True
+while running:
+    # Handle events
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            # Get the mouse position and draw a circle there
+            mouse_pos = pygame.mouse.get_pos()
+            # Get the color of the pixel at the mouse position
+            color = pygame.display.get_surface().get_at(mouse_pos)[:3]
+
+            print(color)
+            if color == dot_color:
+                change_pixel_color(background_image, mouse_pos, fill_color)
+                print(f"Colored red at ({mouse_pos[0]}, {mouse_pos[1]}) - Color: {color} -> {fill_color}")
+            if color == fill_color:
+                change_pixel_color(background_image, mouse_pos, dot_color)
+                print(f"Colored white at ({mouse_pos[0]}, {mouse_pos[1]}) - Color: {color} -> {dot_color}")
+                
+        elif event.type == pygame.VIDEORESIZE:
+            # Resize the window and scale the background image to fit
+            window_width = event.w
+            window_height = event.h
+            window = pygame.display.set_mode((window_width, window_height), pygame.RESIZABLE)
+            background_image = pygame.transform.scale(background_image, (window_width, window_height))
+
+        button.handle_event(event)
+    
+    # Draw the background image
+    window.blit(background_image, (0, 0))
+
+    # Draw the button
+    button.draw(window)
+
+    # Update the screen
+    pygame.display.flip()
+
+    # Limit the frame rate
+    clock.tick(60)
+
+# Quit Pygame
+pygame.quit()
