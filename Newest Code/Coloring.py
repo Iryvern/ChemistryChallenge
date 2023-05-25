@@ -135,7 +135,7 @@ class ColorPicker:
         center = self.rect.left + self.rad + self.p * self.pwidth, self.rect.centery
         pygame.draw.circle(surf, self.get_color(), center, self.rect.height // 2)
 
-cp = ColorPicker(5, 60, 400, 60)
+cp = ColorPicker(5, 60, 200, 30)
 
 def button_action():
     pygame.image.save(background_image, "saved_image.png")
