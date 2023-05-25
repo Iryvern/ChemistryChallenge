@@ -13,34 +13,14 @@ pygame.display.set_caption("Click to color white areas")
 clock = pygame.time.Clock()
 
 # Load the background image
-background_image = pygame.image.load("35Original.png").convert()
+background_image = pygame.image.load("inverted_combined_mask.png").convert()
 
 # Scale the background image to fit the screen
 background_image = pygame.transform.scale(background_image, (window_width, window_height))
 
-def change_pixel_color(surface, pos, new_color):
-    # Get the color value of the pixel at the given position
-    old_color = surface.get_at(pos)[:3]
-    
-    # Check if the old and new colors are the same
-    if old_color == new_color:
-        return
-    
-    # Fill in all connected white pixels with the new color
-    if old_color == (255, 255, 255):
-        flood_fill(surface, pos, new_color, tolerance=10)
-    elif old_color == (255, 0 ,0):
-        flood_fill(surface, pos, new_color, tolerance=10)
-    else:
-        # Set the color value of the pixel at the given position to the new color
-        surface.set_at(pos, new_color)
-    
-    # Update the display to show the changed pixels
+def change_pixel_color(surface, pos, new_color):    
+    flood_fill(surface, pos, new_color, tolerance=10)
     pygame.display.update()
-
-dot_color = (255, 255, 255)
-
-fill_color = (255, 0, 0)
 
 def flood_fill(surface, start_pos, new_color, tolerance=0):
     # Get the starting color and convert it to a tuple if necessary
@@ -120,7 +100,7 @@ class ColorPicker:
 
     def get_color(self):
         color = pygame.Color(0)
-        color.hsla = (int(self.p * self.pwidth), 100, 50, 100)
+        color.hsla = (int(self.p * self.pwidth*2), 100, 50, 100)
         return color
 
     def update(self):
@@ -156,17 +136,14 @@ while running:
         elif event.type == pygame.MOUSEBUTTONDOWN:
             # Get the mouse position and draw a circle there
             mouse_pos = pygame.mouse.get_pos()
-            # Get the color of the pixel at the mouse position
-            color = pygame.display.get_surface().get_at(mouse_pos)[:3]
-
-            print(color)
-            if color == dot_color:
-                change_pixel_color(background_image, mouse_pos, fill_color)
-                print(f"Colored red at ({mouse_pos[0]}, {mouse_pos[1]}) - Color: {color} -> {fill_color}")
-            if color == fill_color:
-                change_pixel_color(background_image, mouse_pos, dot_color)
-                print(f"Colored white at ({mouse_pos[0]}, {mouse_pos[1]}) - Color: {color} -> {dot_color}")
-                
+            # If the click was not inside the ColorPicker or the Button, perform the color change
+            if not cp.rect.collidepoint(mouse_pos) and not button.rect.collidepoint(mouse_pos):
+                # Get the color of the pixel at the mouse position
+                color = pygame.display.get_surface().get_at(mouse_pos)[:3]
+                new_color = cp.get_color()  # get the color from the color picker
+                change_pixel_color(background_image, mouse_pos, new_color)
+                print(f"Colored at ({mouse_pos[0]}, {mouse_pos[1]}) - Color: {color} -> {new_color}")
+                        
         elif event.type == pygame.VIDEORESIZE:
             # Resize the window and scale the background image to fit
             window_width = event.w
