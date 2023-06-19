@@ -31,7 +31,7 @@ def resize_image(image, width=None, height=None, inter=cv2.INTER_AREA):
     return resized
 
 # Load the image
-image = cv2.imread('44Original.png')
+image = cv2.imread('35Original.png')
 
 # Convert the image to grayscale
 gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)

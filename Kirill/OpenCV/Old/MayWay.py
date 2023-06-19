@@ -2,8 +2,8 @@ import cv2 as cv
 from PIL import Image
 import numpy as np
 
-#path = '35Original.png'
-path = 'inverted_combined_mask.png'
+path = '35Original.png'
+#path = 'inverted_combined_mask.png'
 opened = Image.open(path)
 
 src = cv.imread(cv.samples.findFile(path), cv.IMREAD_GRAYSCALE)

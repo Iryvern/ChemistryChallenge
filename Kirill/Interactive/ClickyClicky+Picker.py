@@ -13,7 +13,7 @@ pygame.display.set_caption("Click to color white areas")
 clock = pygame.time.Clock()
 
 # Load the background image
-background_image = pygame.image.load("inverted_combined_mask.png").convert()
+background_image = pygame.image.load("35Original.png").convert()
 
 # Scale the background image to fit the screen
 background_image = pygame.transform.scale(background_image, (window_width, window_height))
